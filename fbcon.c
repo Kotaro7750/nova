@@ -11,6 +11,7 @@ void putc(char c){
       cursor_x = 0;
       break;
     case '\n':
+      cursor_x = 0;
       cursor_y += FONT_HEIGHT;
       if ((cursor_y + FONT_HEIGHT) >= fb.hr) {
         cursor_x = 0;

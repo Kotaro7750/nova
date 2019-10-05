@@ -9,7 +9,7 @@ void start_kernel(void *_t __attribute__ ((unused)), struct framebuffer *_fb,
         set_bg(0, 70, 255);
         clear_screen();
 
-        puts("HELLO WORLD!");
+        puts("HELLO WORLD!\nAAAAAAAA");
 
         while (1);
 }
