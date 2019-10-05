@@ -24,17 +24,18 @@ const char keymap[] = {
         0x00, 0x00, 0x00, '_', 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, '\\', 0x00, 0x00
 };
+//when key is pressed, first bit of 0x0064 is 1. 
 unsigned char get_kbc_data(void){
   while (!(io_read(KBC_STATUS_ADDR) & KBC_STATUS_BIT_OBF)) {
   }
   return io_read(KBC_DATA_ADDR);
 }
 
+//when key is pressed, 8th bit of 0x0060 is 1
 unsigned char get_keycode(void){
   unsigned char keycode;
 
   while ((keycode = get_kbc_data()) & KBC_DATA_BIT_IS_BRAKE) {
-    
   }
   return keycode;
 }
