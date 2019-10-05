@@ -1,11 +1,15 @@
 #include "include/fb.h"
+#include "include/fbcon.h"
 
 void start_kernel(void *_t __attribute__ ((unused)), struct framebuffer *_fb,
                   void *_fs_start __attribute__ ((unused)))
 {
         fb_init(_fb);
-        set_bg(0, 255, 0);
+        set_fg(255, 255, 255);
+        set_bg(0, 70, 255);
         clear_screen();
+
+        puts("HELLO WORLD!");
 
         while (1);
 }

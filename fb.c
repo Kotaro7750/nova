@@ -2,6 +2,7 @@
 
 struct framebuffer fb;
 struct pixelformat color_bg;
+struct pixelformat color_fg;
 
 void fb_init(struct framebuffer *_fb)
 {
@@ -18,6 +19,13 @@ void set_bg(unsigned char r, unsigned char g, unsigned char b)
         color_bg.r = r;
 }
 
+void set_fg(unsigned char r, unsigned char g, unsigned char b)
+{
+        color_fg.b = b;
+        color_fg.g = g;
+        color_fg.r = r;
+}
+
 void draw_px(unsigned int x, unsigned int y,unsigned char r, unsigned char g, unsigned char b)
 {
   struct pixelformat *p = fb.base;
@@ -26,6 +34,16 @@ void draw_px(unsigned int x, unsigned int y,unsigned char r, unsigned char g, un
   p->b = b;
   p->g = g;
   p->r = r;
+}
+
+void draw_px_fg(unsigned int x, unsigned int y)
+{
+  struct pixelformat *p = fb.base;
+  p += y * fb.hr + x;
+
+  p->b = color_fg.b;
+  p->g = color_fg.g;
+  p->r = color_fg.r;
 }
 
 void fill_rect(unsigned int x, unsigned int y,unsigned int w, unsigned int h,unsigned char r, unsigned char g, unsigned char b)
