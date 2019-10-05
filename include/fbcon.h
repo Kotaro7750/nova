@@ -1,7 +1,7 @@
 #ifndef _FBCON_H_
 #define _FBCON_H_
 
-void puts(char* str);
+void putc(char c);
 void puts(char* str);
 
 #endif
