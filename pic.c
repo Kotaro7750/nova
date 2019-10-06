@@ -7,12 +7,14 @@
 #define MPIC_ICW4_ADDR 0x0021
 #define MPIC_OCW1_ADDR 0x0021
 #define MPIC_OCW2_ADDR 0x0020
+#define MPIC_IMR_ADDR 0x0021
+
 #define SPIC_ICW1_ADDR 0x00a0
 #define SPIC_ICW2_ADDR 0x00a1
 #define SPIC_ICW3_ADDR 0x00a1
 #define SPIC_ICW4_ADDR 0x00a1
 #define SPIC_OCW1_ADDR 0x00a1
-#define MPIC_IMR_ADDR 0x0021
+#define SPIC_IMR_ADDR 0x00a1
 
 #define INTR_NO_BASE_MASTER 32
 #define INTR_NO_BASE_SLAVE 40
@@ -20,6 +22,9 @@
 #define PIC_OCW2_BIT_MANUAL_EOI 0x60
 
 void pic_init(void) {
+  // stop interrupt
+  io_write(MPIC_IMR_ADDR, 0xff);
+  io_write(SPIC_IMR_ADDR, 0xff);
   // master
   io_write(MPIC_ICW1_ADDR, 0x11);
   io_write(MPIC_ICW2_ADDR, INTR_NO_BASE_MASTER);

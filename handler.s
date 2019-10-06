@@ -1,8 +1,8 @@
-  .global default_handler
+  .globl default_handler
 default_handler:
   jmp default_handler
 
-  .global kbc_handler
+  .globl kbc_handler
 kbc_handler:
   push %rax
   push %rcx
