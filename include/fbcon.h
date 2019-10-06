@@ -2,6 +2,6 @@
 #define _FBCON_H_
 
 void putc(char c);
-void puts(char* str);
+void puts(char *str);
 
 #endif
