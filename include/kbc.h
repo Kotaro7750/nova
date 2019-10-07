@@ -5,7 +5,6 @@
 #define ASCII_BS 0x08
 #define ASCII_HT 0x09
 
-char getc(void);
 void kbc_init(void);
 
 #endif

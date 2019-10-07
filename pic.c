@@ -22,7 +22,7 @@
 #define PIC_OCW2_BIT_MANUAL_EOI 0x60
 
 void pic_init(void) {
-  // stop interrupt
+  // refuse interrupt
   io_write(MPIC_IMR_ADDR, 0xff);
   io_write(SPIC_IMR_ADDR, 0xff);
   // master
@@ -61,7 +61,6 @@ void enable_pic_intr(unsigned char intr_no) {
 void set_pic_eoi(unsigned char intr_no) {
   // calculate IR number
   unsigned char ir_no = intr_no - INTR_NO_BASE_MASTER;
-
   // set EOI to ir_no
   io_write(MPIC_OCW2_ADDR, PIC_OCW2_BIT_MANUAL_EOI | ir_no);
 }

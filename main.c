@@ -11,6 +11,7 @@ void start_kernel(void *_t __attribute__((unused)), struct framebuffer *_fb,
   set_fg(255, 255, 255);
   set_bg(0, 70, 255);
   clear_screen();
+
   gdt_init();
   intr_init();
 
@@ -18,6 +19,7 @@ void start_kernel(void *_t __attribute__((unused)), struct framebuffer *_fb,
   kbc_init();
 
   enable_cpu_intr();
+
   while (1) {
     cpu_halt();
   }

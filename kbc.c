@@ -25,23 +25,6 @@ const char keymap[] = {
     0x00, 0x00,      0x00, 0x00, 0x00,     0x00,     0x00, 0x00, 0x00, 0x00,
     0x00, 0x00,      0x00, 0x00, 0x00,     '_',      0x00, 0x00, 0x00, 0x00,
     0x00, 0x00,      0x00, 0x00, 0x00,     '\\',     0x00, 0x00};
-// when key is pressed, first bit of 0x0064 is 1.
-unsigned char get_kbc_data(void) {
-  while (!(io_read(KBC_STATUS_ADDR) & KBC_STATUS_BIT_OBF)) {
-  }
-  return io_read(KBC_DATA_ADDR);
-}
-
-// when key is pressed, 8th bit of 0x0060 is 1
-unsigned char get_keycode(void) {
-  unsigned char keycode;
-
-  while ((keycode = get_kbc_data()) & KBC_DATA_BIT_IS_BRAKE) {
-  }
-  return keycode;
-}
-
-char getc(void) { return keymap[get_keycode()]; }
 
 void kbc_handler(void);
 
@@ -67,9 +50,9 @@ kbc_exit:
 }
 
 void kbc_init(void) {
-  void *addr;
-  asm volatile ("lea kbc_handler, %[addr]"
-              : [addr]"=r"(addr));
-  set_intr_desc(KBC_INTR_NO, addr);
+  void *handler;
+  asm volatile ("lea kbc_handler, %[handler]"
+              : [handler]"=r"(handler));
+  set_intr_desc(KBC_INTR_NO, handler);
   enable_pic_intr(KBC_INTR_NO);
 }

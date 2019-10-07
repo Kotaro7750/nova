@@ -16,6 +16,11 @@ unsigned char io_read(unsigned short addr) {
   return value;
 }
 
+void io_write(unsigned short addr, unsigned char value) {
+  asm volatile("outb %[value], %[addr]" ::[value] "a"(value),
+               [ addr ] "d"(addr));
+}
+
 void gdt_init(void) {
   gdtr[0] = ((unsigned long long)gdt << 16) | (sizeof(gdt) - 1);
   gdtr[1] = ((unsigned long long)gdt >> 48);
@@ -40,9 +45,3 @@ void gdt_init(void) {
 
 void enable_cpu_intr(void) { asm volatile("sti"); }
 void cpu_halt(void) { asm volatile("hlt"); }
-
-void io_write(unsigned short addr, unsigned char value) {
-  asm volatile("outb %[value], %[addr]" ::[value] "a"(value),
-               [ addr ] "d"(addr));
-}
-
