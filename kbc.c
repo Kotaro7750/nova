@@ -46,7 +46,6 @@ char getc(void) { return keymap[get_keycode()]; }
 void kbc_handler(void);
 
 void do_kbc_interrupt(void) {
-  puts("HOGE");
   if (!(io_read(KBC_STATUS_ADDR) & KBC_STATUS_BIT_OBF)) {
     goto kbc_exit;
   }
@@ -65,10 +64,12 @@ void do_kbc_interrupt(void) {
 
 kbc_exit:
   set_pic_eoi(KBC_INTR_NO);
-  asm volatile("iretq");
 }
 
 void kbc_init(void) {
-  set_intr_desc(KBC_INTR_NO, do_kbc_interrupt);
+  void *addr;
+  asm volatile ("lea kbc_handler, %[addr]"
+              : [addr]"=r"(addr));
+  set_intr_desc(KBC_INTR_NO, addr);
   enable_pic_intr(KBC_INTR_NO);
 }
