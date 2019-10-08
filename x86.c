@@ -1,13 +1,44 @@
 #include "include/x86.h"
 
-//const unsigned long long gdt[] = {
-//    0x0000000000000000, /* NULL descriptor */
-//    0x00af9a000000ffff, /* base=0, limit=4GB, mode=code(r-x),kernel */
-//    0x00cf93000000ffff  /* base=0, limit=4GB, mode=data(rw-),kernel */
-//};
+// Each define here is for a specific flag in the descriptor.
+// Refer to the intel documentation for a description of what each one does.
+#define SEG_DESCTYPE(x)                                                        \
+  ((x) << 0x04) // Descriptor type (0 for system, 1 for code/data)
+#define SEG_PRES(x) ((x) << 0x07) // Present
+#define SEG_SAVL(x) ((x) << 0x0C) // Available for system use
+#define SEG_LONG(x) ((x) << 0x0D) // Long mode
+#define SEG_SIZE(x) ((x) << 0x0E) // Size (0 for 16-bit, 1 for 32)
+#define SEG_GRAN(x)                                                            \
+  ((x) << 0x0F) // Granularity (0 for 1B - 1MB, 1 for 4KB - 4GB)
+#define SEG_PRIV(x) (((x)&0x03) << 0x05) // Set privilege level (0 - 3)
 
-struct segment_descripter* gdt;
+#define SEG_DATA_RD 0x00        // Read-Only
+#define SEG_DATA_RDA 0x01       // Read-Only, accessed
+#define SEG_DATA_RDWR 0x02      // Read/Write
+#define SEG_DATA_RDWRA 0x03     // Read/Write, accessed
+#define SEG_DATA_RDEXPD 0x04    // Read-Only, expand-down
+#define SEG_DATA_RDEXPDA 0x05   // Read-Only, expand-down, accessed
+#define SEG_DATA_RDWREXPD 0x06  // Read/Write, expand-down
+#define SEG_DATA_RDWREXPDA 0x07 // Read/Write, expand-down, accessed
+#define SEG_CODE_EX 0x08        // Execute-Only
+#define SEG_CODE_EXA 0x09       // Execute-Only, accessed
+#define SEG_CODE_EXRD 0x0A      // Execute/Read
+#define SEG_CODE_EXRDA 0x0B     // Execute/Read, accessed
+#define SEG_CODE_EXC 0x0C       // Execute-Only, conforming
+#define SEG_CODE_EXCA 0x0D      // Execute-Only, conforming, accessed
+#define SEG_CODE_EXRDC 0x0E     // Execute/Read, conforming
+#define SEG_CODE_EXRDCA 0x0F    // Execute/Read, conforming, accessed
 
+// long is 1. for x86_64. see https://wiki.osdev.org/Global_Descriptor_Table
+#define GDT_CODE_PL0                                                           \
+  SEG_DESCTYPE(1) | SEG_PRES(1) | SEG_SAVL(0) | SEG_LONG(1) | SEG_SIZE(0) |    \
+      SEG_GRAN(1) | SEG_PRIV(0) | SEG_CODE_EXRD
+
+#define GDT_DATA_PL0                                                           \
+  SEG_DESCTYPE(1) | SEG_PRES(1) | SEG_SAVL(0) | SEG_LONG(0) | SEG_SIZE(1) |    \
+      SEG_GRAN(1) | SEG_PRIV(0) | SEG_DATA_RDWRA
+
+unsigned long long gdt[3];
 unsigned long long gdtr[2];
 
 unsigned char io_read(unsigned short addr) {
@@ -23,27 +54,32 @@ void io_write(unsigned short addr, unsigned char value) {
                [ addr ] "d"(addr));
 }
 
-void set_segment_desc(struct segment_descripter* sd, unsigned long long limit,long long base,long long access_right){
-  //paging mode
-  if (limit > 0xfffff) {
-		access_right |= 0x8000; 
-		limit /= 0x1000;
-	}
-  sd->base_00_15 = base & 0xffff;
-  sd->limit_00_15 = limit & 0xffff;
-  sd->base_16_23 = base >> 16 & 0xff;
-  sd->access_right = access_right & 0xff;
-  sd->limit_16_19_flag = ((limit >> 16) & 0xff) | ((access_right >> 8 ) & 0xf0);
-  sd->base_24_31 = (base >> 24) & 0xff;
-  
-  return;
+unsigned long long create_descriptor(unsigned long base, unsigned long limit,
+                                     unsigned short flag) {
+  unsigned long long descriptor = 0;
+
+  // Create the high 32 bit segment
+  descriptor = limit & 0x000F0000; // set limit bits 19:16
+  descriptor |=
+      (flag << 8) & 0x00F0FF00; // set type, p, dpl, s, g, d/b, l and avl fields
+  descriptor |= (base >> 16) & 0x000000FF; // set base bits 23:16
+  descriptor |= base & 0xFF000000;         // set base bits 31:24
+
+  // Shift by 32 to allow for low part of segment
+  descriptor <<= 32;
+
+  // Create the low 32 bit segment
+  descriptor |= base << 16;         // set base bits 15:0
+  descriptor |= limit & 0x0000FFFF; // set limit bits 15:0
+
+  return descriptor;
 }
 
-
 void gdt_init(void) {
-  set_segment_desc(gdt, 0, 0, 0);
-  set_segment_desc(gdt+1, 0xffffffff, 0, 0x409a);
-  set_segment_desc(gdt+2, 0xffffffff, 0, 0x4092);
+  gdt[0] = create_descriptor(0, 0, 0);
+  gdt[1] = create_descriptor(0, 0xffffffff, GDT_CODE_PL0);
+  gdt[2] = create_descriptor(0, 0xffffffff, GDT_DATA_PL0);
+
   gdtr[0] = ((unsigned long long)gdt << 16) | (sizeof(gdt) - 1);
   gdtr[1] = ((unsigned long long)gdt >> 48);
   asm volatile("lgdt gdtr");
