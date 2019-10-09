@@ -5,9 +5,14 @@
 #include "include/pic.h"
 #include "include/x86.h"
 
-void start_kernel(void *_t __attribute__((unused)), struct framebuffer *_fb,
+struct __attribute__((packed)) platform_info {
+  struct framebuffer fb;
+  void *rsdp;
+};
+
+void start_kernel(void *_t __attribute__((unused)), struct platform_info *pi,
                   void *_fs_start __attribute__((unused))) {
-  fb_init(_fb);
+  fb_init(&pi->fb);
   set_fg(255, 255, 255);
   set_bg(0, 70, 255);
   clear_screen();
