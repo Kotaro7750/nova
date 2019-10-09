@@ -1,5 +1,6 @@
 fs/NvVars
 fs/kernel.bin
+fs/EFI/BOOT/BOOTX64.efi
 kernel.bin
 
 # Prerequisites
