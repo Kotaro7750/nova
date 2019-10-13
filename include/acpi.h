@@ -13,6 +13,14 @@ struct __attribute__((packed)) SDTH {
   unsigned int Creator_Revision;
 };
 
+struct __attribute__((packed)) ACPI_ADDRESS {
+  unsigned char address_space_id;
+  unsigned char register_bit_width;
+  unsigned char register_bit_offset;
+  unsigned char _reserved;
+  unsigned long long address;
+};
+
 void acpi_init(void *rsdp);
 void dump_sdth_sig(struct SDTH *h);
 void dump_xsdt(void);
