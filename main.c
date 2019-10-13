@@ -12,6 +12,8 @@ struct __attribute__((packed)) platform_info {
   void *rsdp;
 };
 
+void handler(void);
+
 void start_kernel(void *_t __attribute__((unused)), struct platform_info *pi,
                   void *_fs_start __attribute__((unused))) {
   fb_init(&pi->fb);
@@ -19,15 +21,16 @@ void start_kernel(void *_t __attribute__((unused)), struct platform_info *pi,
   set_bg(0, 70, 255);
   clear_screen();
   acpi_init(pi->rsdp);
-  hpet_init();
-  dump_gcr();
-  dump_mcr();
 
   gdt_init();
   intr_init();
 
   pic_init();
+  hpet_init();
   kbc_init();
+
+  puts("WAIT ...");
+  alert(5 * SEC_TO_US, handler);
 
   enable_cpu_intr();
 
@@ -35,3 +38,5 @@ void start_kernel(void *_t __attribute__((unused)), struct platform_info *pi,
     cpu_halt();
   }
 }
+
+void handler(void) { puts(" DONE"); }

@@ -1,5 +1,12 @@
+#include "include/hpet.h"
 #include "include/acpi.h"
+#include "include/common.h"
 #include "include/fbcon.h"
+#include "include/intr.h"
+#include "include/pic.h"
+
+#define TIMER_N 0
+#define US_TO_FS 1000000000
 
 #define GCIDR_ADDR (reg_base)
 #define GCIDR (*(volatile unsigned long long *)GCIDR_ADDR)
@@ -30,6 +37,39 @@ union gcr {
 #define MCR_ADDR (reg_base + 0xf0)
 #define MCR (*(volatile unsigned long long *)MCR_ADDR)
 
+#define TNCCR_ADDR(n) (reg_base + (0x20 * (n)) + 0x100)
+#define TNCCR(n) (*(volatile unsigned long long *)(TNCCR_ADDR(n)))
+#define TNCCR_INT_TYPE_EDGE 0
+#define TNCCR_INT_TYPE_LEVEL 1
+#define TNCCR_TYPE_NON_PERIODIC 0
+#define TNCCR_TYPE_PERIODIC 1
+union tnccr {
+  unsigned long long raw;
+  struct __attribute__((packed)) {
+    unsigned long long _reserved1 : 1;
+    unsigned long long int_type_cnf : 1;
+    unsigned long long int_enb_cnf : 1;
+    unsigned long long type_cnf : 1;
+    unsigned long long per_int_cap : 1;
+    unsigned long long size_cap : 1;
+    unsigned long long val_set_cnf : 1;
+    unsigned long long _reserved2 : 1;
+    unsigned long long mode32_cnf : 1;
+    unsigned long long int_route_cnf : 5;
+    unsigned long long fsb_en_cnf : 1;
+    unsigned long long fsb_int_del_cap : 1;
+    unsigned long long _reserved3 : 16;
+    unsigned long long int_route_cap : 32;
+  };
+};
+
+/* Timer N Comparator Register */
+#define TNCR_ADDR(n) (reg_base + (0x20 * (n)) + 0x108)
+#define TNCR(n) (*(volatile unsigned long long *)(TNCR_ADDR(n)))
+
+void hpet_handler(void);
+void (*user_handler)(unsigned long long current_rsp) = NULL;
+
 struct __attribute__((packed)) HPET_TABLE {
   struct SDTH header;
   unsigned int event_timer_block_id;
@@ -40,6 +80,7 @@ struct __attribute__((packed)) HPET_TABLE {
 };
 
 unsigned long long reg_base;
+unsigned int counter_clk_period;
 
 void hpet_init(void) {
   struct HPET_TABLE *hpet_table = (struct HPET_TABLE *)get_sdt("HPET");
@@ -48,7 +89,31 @@ void hpet_init(void) {
   union gcr gcr;
   gcr.raw = GCR;
   gcr.enable_cnf = 0;
+  gcr.leg_rt_cnf = 1;
   GCR = gcr.raw;
+
+  union gcidr gcidr;
+  gcidr.raw = GCIDR;
+  counter_clk_period = gcidr.counter_clk_period;
+
+  union tnccr tnccr;
+  tnccr.raw = TNCCR(TIMER_N);
+  tnccr.int_type_cnf = TNCCR_INT_TYPE_EDGE;
+  tnccr.int_enb_cnf = 0;
+  tnccr.type_cnf = TNCCR_TYPE_NON_PERIODIC;
+  tnccr.val_set_cnf = 0;
+  tnccr.mode32_cnf = 0;
+  tnccr.fsb_en_cnf = 0;
+  tnccr._reserved1 = 0;
+  tnccr._reserved2 = 0;
+  tnccr._reserved3 = 0;
+  TNCCR(TIMER_N) = tnccr.raw;
+
+  void *handler;
+  asm volatile("lea hpet_handler, %[handler]" : [ handler ] "=r"(handler));
+  set_intr_desc(HPET_INTR_NO, handler);
+
+  enable_pic_intr(HPET_INTR_NO);
 }
 
 void dump_gcidr(void) {
@@ -97,4 +162,48 @@ void dump_mcr(void) {
   puts("MCR ");
   puth(MCR, 16);
   puts("\r\n");
+}
+
+void do_hpet_interrupt(unsigned long long current_rsp) {
+  union gcr gcr;
+  gcr.raw = GCR;
+  gcr.enable_cnf = 0;
+  GCR = gcr.raw;
+
+  union tnccr tnccr;
+  tnccr.raw = TNCCR(TIMER_N);
+  tnccr.int_enb_cnf = 0;
+  tnccr._reserved1 = 0;
+  tnccr._reserved2 = 0;
+  tnccr._reserved3 = 0;
+  TNCCR(TIMER_N) = tnccr.raw;
+
+  if (user_handler)
+    user_handler(current_rsp);
+
+  set_pic_eoi(HPET_INTR_NO);
+}
+
+void alert(unsigned long long us, void *handler) {
+  user_handler = handler;
+
+  union tnccr tnccr;
+  tnccr.raw = TNCCR(TIMER_N);
+  tnccr.int_enb_cnf = 1;
+  tnccr.type_cnf = TNCCR_TYPE_NON_PERIODIC;
+  tnccr._reserved1 = 0;
+  tnccr._reserved2 = 0;
+  tnccr._reserved3 = 0;
+  TNCCR(TIMER_N) = tnccr.raw;
+
+  MCR = (unsigned long long)0;
+
+  unsigned long long femt_sec = us * US_TO_FS;
+  unsigned long long clk_counts = femt_sec / counter_clk_period;
+  TNCR(TIMER_N) = clk_counts;
+
+  union gcr gcr;
+  gcr.raw = GCR;
+  gcr.enable_cnf = 1;
+  GCR = gcr.raw;
 }
