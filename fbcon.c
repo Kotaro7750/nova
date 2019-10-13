@@ -2,6 +2,10 @@
 #include "include/fb.h"
 #include "include/font.h"
 
+/* 64bit unsignedの最大値0xffffffffffffffffは
+ * 10進で18446744073709551615(20桁)なので'\0'含め21文字分のバッファで足りる */
+#define MAX_STR_BUF 21
+
 unsigned int cursor_x = 0;
 unsigned int cursor_y = 0;
 
@@ -47,4 +51,18 @@ void puts(char *str) {
   while (*str != '\0') {
     putc(*str++);
   }
+}
+
+void putd(unsigned long long val, unsigned char num_digits) {
+  char str[MAX_STR_BUF];
+
+  int i;
+  for (i = num_digits - 1; i >= 0; i--) {
+    int digit = val % 10;
+    str[i] = '0' + digit;
+    val /= 10;
+  }
+  str[num_digits] = '\0';
+
+  puts(str);
 }

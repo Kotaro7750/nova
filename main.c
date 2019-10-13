@@ -1,3 +1,4 @@
+#include "include/acpi.h"
 #include "include/fb.h"
 #include "include/fbcon.h"
 #include "include/intr.h"
@@ -16,6 +17,7 @@ void start_kernel(void *_t __attribute__((unused)), struct platform_info *pi,
   set_fg(255, 255, 255);
   set_bg(0, 70, 255);
   clear_screen();
+  acpi_init(pi->rsdp);
 
   gdt_init();
   intr_init();
@@ -24,6 +26,9 @@ void start_kernel(void *_t __attribute__((unused)), struct platform_info *pi,
   kbc_init();
 
   enable_cpu_intr();
+  dump_xsdt();
+  struct SDTH *hpet_table = get_sdt("HPET");
+  dump_sdth_sig(hpet_table);
 
   while (1) {
     cpu_halt();

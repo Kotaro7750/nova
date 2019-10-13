@@ -3,5 +3,5 @@
 
 void putc(char c);
 void puts(char *str);
-
+void putd(unsigned long long val, unsigned char num_digits);
 #endif
