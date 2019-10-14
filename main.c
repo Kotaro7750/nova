@@ -14,6 +14,7 @@ struct __attribute__((packed)) platform_info {
 };
 
 void handler(void);
+void do_taskA(void);
 
 void start_kernel(void *_t __attribute__((unused)), struct platform_info *pi,
                   void *_fs_start __attribute__((unused))) {
@@ -36,6 +37,8 @@ void start_kernel(void *_t __attribute__((unused)), struct platform_info *pi,
 
   sched_start();
 
+  do_taskA();
+
   while (1) {
     cpu_halt();
   }
@@ -47,4 +50,13 @@ void handler(void) {
     putc('0' + counter++);
   else
     ptimer_stop();
+}
+
+void do_taskA(void) {
+  while (1) {
+    putc('A');
+    volatile unsigned long long wait = 10000000;
+    while (wait--)
+      ;
+  }
 }
