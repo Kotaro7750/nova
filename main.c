@@ -6,6 +6,7 @@
 #include "include/kbc.h"
 #include "include/pic.h"
 #include "include/sched.h"
+#include "include/shell.h"
 #include "include/x86.h"
 
 struct __attribute__((packed)) platform_info {
@@ -35,9 +36,10 @@ void start_kernel(void *_t __attribute__((unused)), struct platform_info *pi,
 
   enable_cpu_intr();
 
-  sched_start();
+  // sched_start();
 
-  do_taskA();
+  shsh();
+  // do_taskA();
 
   while (1) {
     cpu_halt();

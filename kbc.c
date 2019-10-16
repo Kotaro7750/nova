@@ -2,6 +2,7 @@
 #include "include/fbcon.h"
 #include "include/intr.h"
 #include "include/pic.h"
+#include "include/shell.h"
 #include "include/x86.h"
 
 #define KBC_DATA_ADDR 0x0060
@@ -40,10 +41,12 @@ void do_kbc_interrupt(void) {
   char c = keymap[keycode];
   if (('a' <= c && c <= 'z')) {
     c = c - 'a' + 'A';
+    input_to_buffer(c);
   } else if (c == '\n') {
-    putc('\r');
+    //  putc('\r');
+    input_to_buffer('\r');
   }
-  putc(c);
+  // putc(c);
 
 kbc_exit:
   set_pic_eoi(KBC_INTR_NO);
@@ -51,8 +54,7 @@ kbc_exit:
 
 void kbc_init(void) {
   void *handler;
-  asm volatile ("lea kbc_handler, %[handler]"
-              : [handler]"=r"(handler));
+  asm volatile("lea kbc_handler, %[handler]" : [ handler ] "=r"(handler));
   set_intr_desc(KBC_INTR_NO, handler);
   enable_pic_intr(KBC_INTR_NO);
 }
