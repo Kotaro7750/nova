@@ -2,6 +2,8 @@
 #include "include/fb.h"
 #include "include/font.h"
 
+#define MAX_STR_BUF 21
+
 unsigned int cursor_x = 0;
 unsigned int cursor_y = 0;
 
@@ -47,4 +49,21 @@ void puts(char *str) {
   while (*str != '\0') {
     putc(*str++);
   }
+}
+
+void puth(unsigned long long val, unsigned char num_digits) {
+  char str[MAX_STR_BUF];
+
+  int i;
+  for (i = num_digits - 1; i >= 0; i--) {
+    unsigned char v = (unsigned char)(val & 0x0f);
+    if (v < 0xa)
+      str[i] = '0' + v;
+    else
+      str[i] = 'A' + (v - 0xa);
+    val >>= 4;
+  }
+  str[num_digits] = '\0';
+
+  puts(str);
 }

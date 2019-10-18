@@ -2,6 +2,7 @@
 #include "include/fbcon.h"
 #include "include/intr.h"
 #include "include/kbc.h"
+#include "include/paging.h"
 #include "include/pic.h"
 #include "include/x86.h"
 
@@ -24,6 +25,8 @@ void start_kernel(void *_t __attribute__((unused)), struct platform_info *pi,
   kbc_init();
 
   enable_cpu_intr();
+
+  show_current_page();
 
   while (1) {
     cpu_halt();
