@@ -22,11 +22,12 @@ void start_kernel(void *_t __attribute__((unused)), struct platform_info *pi,
   intr_init();
 
   pic_init();
-  kbc_init();
+  // kbc_init();
 
   enable_cpu_intr();
 
-  show_current_page();
+  disable_paging();
+  // show_current_page();
 
   while (1) {
     cpu_halt();
