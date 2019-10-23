@@ -67,3 +67,11 @@ void puth(unsigned long long val, unsigned char num_digits) {
 
   puts(str);
 }
+
+void putb(unsigned long long val) {
+  if (val == 1) {
+    puts("TRUE");
+  } else {
+    puts("FALSE");
+  }
+}

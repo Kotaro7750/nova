@@ -20,3 +20,23 @@ kbc_handler:
   pop %rcx
   pop %rax
   iretq
+
+  .globl page_fault_handler
+page_fault_handler:
+  push %rax
+  push %rcx
+  push %rdx
+  push %rbx
+  push %rbp
+  push %rsi
+  push %rdi
+  call do_page_fault_handler
+  pop %rdi
+  pop %rsi
+  pop %rbp
+  pop %rbx
+  pop %rdx
+  pop %rcx
+  pop %rax
+  iretq
+
