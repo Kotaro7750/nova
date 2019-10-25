@@ -22,7 +22,7 @@ void start_kernel(void *_t __attribute__((unused)), struct platform_info *pi,
   intr_init();
 
   pic_init();
-  // kbc_init();
+  kbc_init();
   pg_init();
 
   enable_cpu_intr();
@@ -31,7 +31,7 @@ void start_kernel(void *_t __attribute__((unused)), struct platform_info *pi,
   // show_current_page();
   // paging_info();
   copy_PML4();
-  switch_PML4();
+  // switch_PML4();
 
   while (1) {
     cpu_halt();
