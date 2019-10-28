@@ -40,3 +40,22 @@ hpet_handler:
   pop %rcx
   pop %rax
   iretq
+
+  .globl syscall_handler
+syscall_handler:
+  push %rcx
+  push %rax
+  push %rdx
+  push %rbx
+  push %rbp
+  push %rsi
+  push %rdi
+  call do_syscall_handler
+  pop %rdi
+  pop %rsi
+  pop %rbp
+  pop %rbx
+  pop %rdx
+  pop %rcx
+  pop %rcx
+  iretq

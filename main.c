@@ -6,6 +6,7 @@
 #include "include/kbc.h"
 #include "include/pic.h"
 #include "include/sched.h"
+#include "include/syscall.h"
 #include "include/x86.h"
 
 struct __attribute__((packed)) platform_info {
@@ -31,13 +32,20 @@ void start_kernel(void *_t __attribute__((unused)), struct platform_info *pi,
   hpet_init();
   kbc_init();
 
-  sched_init();
+  syscall_init();
 
   enable_cpu_intr();
 
-  sched_start();
-
-  do_taskA();
+  unsigned long long softirq_ret;
+  asm volatile("movq $1, %%rdi\n"
+               "movq $2, %%rsi\n"
+               "movq $3, %%rdx\n"
+               "movq $4, %%rcx\n"
+               "int $0x80\n"
+               "movq %%rax, %[softirq_ret]"
+               : [ softirq_ret ] "=r"(softirq_ret)
+               :);
+  puth(softirq_ret, 16);
 
   while (1) {
     cpu_halt();
