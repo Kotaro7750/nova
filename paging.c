@@ -6,11 +6,8 @@
 #define ENTRY_NUM 512
 #define PG_INTR_NO 0x0e
 
-#define ALL_ENTRY 1048576 // 512 * 512 * 4
-
-unsigned long long PT[ALL_ENTRY];
-
 unsigned long long PML4[ENTRY_NUM];
+unsigned long long PDPT[ENTRY_NUM];
 
 void page_fault_handler(void);
 
@@ -121,4 +118,16 @@ void pg_init(void) {
   enable_pic_intr(PG_INTR_NO);
 }
 
-void create_PT(void) {}
+void create_PT(void) {
+  for (int i = 0; i < ENTRY_NUM; i++) {
+    PML4[i] = 0;
+    PDPT[i] = 0;
+  }
+  PML4[0] = (unsigned long long)PDPT << 12;
+  PML4[0] = PML4[0] | 0x3;
+
+  for (int i = 0; i < 4; i++) {
+    PDPT[i] = PDPT[i] & 0x83;
+  }
+  PDPT[0] = PDPT[0] |
+}
