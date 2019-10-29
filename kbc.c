@@ -1,4 +1,5 @@
 #include "include/kbc.h"
+#include "include/common.h"
 #include "include/fbcon.h"
 #include "include/intr.h"
 #include "include/pic.h"
@@ -28,6 +29,8 @@ const char keymap[] = {
 
 void kbc_handler(void);
 
+struct queue keycode_queue;
+
 void do_kbc_interrupt(void) {
   if (!(io_read(KBC_STATUS_ADDR) & KBC_STATUS_BIT_OBF)) {
     goto kbc_exit;
@@ -37,7 +40,12 @@ void do_kbc_interrupt(void) {
   if (keycode & KBC_DATA_BIT_IS_BRAKE) {
     goto kbc_exit;
   }
-  char c = keymap[keycode];
+
+  enqueue(&keycode_queue, keycode);
+  if (keycode_queue.status == ERROR) {
+    puts("ERROR!!\n");
+  }
+  char c = keymap[dequeue(&keycode_queue)];
   if (('a' <= c && c <= 'z')) {
     c = c - 'a' + 'A';
   } else if (c == '\n') {
@@ -50,6 +58,7 @@ kbc_exit:
 }
 
 void kbc_init(void) {
+  queue_init(&keycode_queue);
   void *handler;
   asm volatile("lea kbc_handler, %[handler]" : [ handler ] "=r"(handler));
   set_intr_desc(KBC_INTR_NO, handler);
