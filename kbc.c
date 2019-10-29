@@ -45,13 +45,6 @@ void do_kbc_interrupt(void) {
   if (keycode_queue.status == ERROR) {
     puts("ERROR!!\n");
   }
-  char c = keymap[dequeue(&keycode_queue)];
-  if (('a' <= c && c <= 'z')) {
-    c = c - 'a' + 'A';
-  } else if (c == '\n') {
-    putc('\r');
-  }
-  putc(c);
 
 kbc_exit:
   set_pic_eoi(KBC_INTR_NO);
@@ -65,4 +58,10 @@ void kbc_init(void) {
   enable_pic_intr(KBC_INTR_NO);
 }
 
-char getc(void) { return 0; }
+char getc(void) {
+  char c = keymap[dequeue(&keycode_queue)];
+  if (('a' <= c && c <= 'z')) {
+    c = c - 'a' + 'A';
+  }
+  return c;
+}

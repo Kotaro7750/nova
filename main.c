@@ -36,8 +36,9 @@ void start_kernel(void *_t __attribute__((unused)), struct platform_info *pi,
 
   enable_cpu_intr();
 
-  // unsigned long long softirq_ret = syscall(1, 5, 3, 9);
-  // puth(softirq_ret, 16);
+  char buf[256];
+  unsigned long long softirq_ret = syscall(0, 0, (unsigned long long)buf, 256);
+  puth(softirq_ret, 16);
 
   while (1) {
     cpu_halt();
