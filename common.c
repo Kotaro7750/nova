@@ -11,6 +11,7 @@ int strncmp(char *str1, char *str2, unsigned int size) {
 }
 
 void queue_init(struct queue *q) {
+  q->status = OK;
   q->size = 0;
   q->start = 0;
   q->end = 0;
@@ -22,6 +23,7 @@ void enqueue(struct queue *q, unsigned char data) {
     q->status = ERROR;
     return;
   }
+  q->status = OK;
 
   intr_lock(&ifflag);
 
@@ -38,6 +40,7 @@ unsigned char dequeue(struct queue *q) {
     q->status = ERROR;
     return NULL;
   }
+  q->status = OK;
 
   intr_lock(&ifflag);
 

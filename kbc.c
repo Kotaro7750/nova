@@ -44,6 +44,7 @@ void do_kbc_interrupt(void) {
   enqueue(&keycode_queue, keycode);
   if (keycode_queue.status == ERROR) {
     puts("ERROR!!\n");
+    puth(keycode_queue.size, 16);
   }
 
 kbc_exit:
