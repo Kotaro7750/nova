@@ -36,15 +36,7 @@ void start_kernel(void *_t __attribute__((unused)), struct platform_info *pi,
 
   enable_cpu_intr();
 
-  unsigned long long softirq_ret;
-  asm volatile("movq $1, %%rdi\n"
-               "movq $2, %%rsi\n"
-               "movq $3, %%rdx\n"
-               "movq $4, %%rcx\n"
-               "int $0x80\n"
-               "movq %%rax, %[softirq_ret]"
-               : [ softirq_ret ] "=r"(softirq_ret)
-               :);
+  unsigned long long softirq_ret = syscall(1, 5, 3, 9);
   puth(softirq_ret, 16);
 
   while (1) {

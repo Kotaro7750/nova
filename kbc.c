@@ -55,3 +55,5 @@ void kbc_init(void) {
   set_intr_desc(KBC_INTR_NO, handler);
   enable_pic_intr(KBC_INTR_NO);
 }
+
+char getc(void) { return 0; }
