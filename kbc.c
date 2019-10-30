@@ -89,10 +89,8 @@ char get_pressed_keycode(void) {
   return get_keycode(keydata);
 }
 
-char getc(void) { return keymap[get_pressed_keycode()]; }
-
-char getline(void) {
-  char c = getc();
+char getc(void) {
+  char c = keymap[get_pressed_keycode()];
   if (('a' <= c && c <= 'z')) {
     c = c - 'a' + 'A';
   }

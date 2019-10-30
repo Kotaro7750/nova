@@ -6,6 +6,15 @@
 
 #define SYSCALL_INTR_NO 0x80
 
+void syscall_handler(void);
+
+void syscall_init(void) {
+  void *handler;
+  asm volatile("lea syscall_handler, %[handler]" : [ handler ] "=r"(handler));
+  set_intr_desc(SYSCALL_INTR_NO, handler);
+  enable_pic_intr(SYSCALL_INTR_NO);
+}
+
 unsigned long long do_syscall_handler(unsigned long long syscall_id,
                                       unsigned long long arg1,
                                       unsigned long long arg2,
@@ -44,15 +53,6 @@ unsigned long long syscall(unsigned long long syscall_id,
   return ret;
 }
 
-void syscall_handler(void);
-
-void syscall_init(void) {
-  void *handler;
-  asm volatile("lea syscall_handler, %[handler]" : [ handler ] "=r"(handler));
-  set_intr_desc(SYSCALL_INTR_NO, handler);
-  enable_pic_intr(SYSCALL_INTR_NO);
-}
-
 unsigned long long read(unsigned long long fd, void *buf,
                         unsigned long long buf_size) {
   if (fd == 0) {
@@ -64,7 +64,7 @@ unsigned long long read(unsigned long long fd, void *buf,
 unsigned long long read_from_stdin(char *buf, unsigned long long buf_size) {
   unsigned long long i;
   for (i = 0; i < buf_size - 1;) {
-    buf[i] = getline();
+    buf[i] = getc();
     putc(buf[i]);
     if (buf[i] == '\n') {
       putc('\r');

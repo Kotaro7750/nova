@@ -6,6 +6,6 @@
 #define ASCII_HT 0x09
 
 void kbc_init(void);
-char getline(void);
+char getc(void);
 
 #endif
