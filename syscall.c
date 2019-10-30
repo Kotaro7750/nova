@@ -64,7 +64,7 @@ unsigned long long read(unsigned long long fd, void *buf,
 unsigned long long read_from_stdin(char *buf, unsigned long long buf_size) {
   unsigned long long i;
   for (i = 0; i < buf_size - 1;) {
-    buf[i] = getc();
+    buf[i] = getline();
     putc(buf[i]);
     if (buf[i] == '\n') {
       putc('\r');
