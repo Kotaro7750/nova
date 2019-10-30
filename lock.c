@@ -1,7 +1,5 @@
 #include "include/lock.h"
-
-#define cli() asm("cli\n")
-#define sti() asm("sti\n")
+#include "include/pic.h"
 
 void intr_lock(char *ifflag) {
   unsigned long long rflag;

@@ -78,12 +78,14 @@ char get_keydata(void) {
   return data;
 }
 
+char get_keycode(char keydata) { return keydata & ~KBC_DATA_BIT_IS_BRAKE; }
+
 char get_pressed_keycode(void) {
   char keydata;
   while ((keydata = get_keydata()) & KBC_DATA_BIT_IS_BRAKE) {
     cpu_halt();
   }
-  return keydata & ~KBC_DATA_BIT_IS_BRAKE;
+  return get_keycode(keydata);
 }
 
 char getc(void) {
