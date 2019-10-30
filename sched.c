@@ -35,39 +35,40 @@ void schedule(unsigned long long current_rsp) {
 }
 
 void sched_init(void) {
-  ptimer_setup(SCHED_PERIOD, schedule);
-  unsigned long long *sp =
-      (unsigned long long *)((unsigned char *)taskB_stack + TASK_B_STASK_BYTES);
-  unsigned long long old_sp = (unsigned long long)sp;
+  // ptimer_setup(SCHED_PERIOD, schedule);
+  // unsigned long long *sp =
+  //    (unsigned long long *)((unsigned char *)taskB_stack +
+  //    TASK_B_STASK_BYTES);
+  // unsigned long long old_sp = (unsigned long long)sp;
 
-  /* push SS */
-  --sp;
-  *sp = 0x10;
+  ///* push SS */
+  //--sp;
+  //*sp = 0x10;
 
-  /* push old RSP */
-  --sp;
-  *sp = old_sp;
+  ///* push old RSP */
+  //--sp;
+  //*sp = old_sp;
 
-  /* push RFLAGS */
-  --sp;
-  *sp = 0x202;
+  ///* push RFLAGS */
+  //--sp;
+  //*sp = 0x202;
 
-  /* push CS */
-  --sp;
-  *sp = 8;
+  ///* push CS */
+  //--sp;
+  //*sp = 8;
 
-  /* push RIP */
-  --sp;
-  *sp = (unsigned long long)do_taskB;
+  ///* push RIP */
+  //--sp;
+  //*sp = (unsigned long long)do_taskB;
 
-  /* push GR */
-  unsigned char i;
-  for (i = 0; i < 7; i++) {
-    --sp;
-    *sp = 0;
-  }
+  ///* push GR */
+  // unsigned char i;
+  // for (i = 0; i < 7; i++) {
+  //  --sp;
+  //  *sp = 0;
+  //}
 
-  task_sp[1] = (unsigned long long)sp;
+  // task_sp[1] = (unsigned long long)sp;
 }
 
 void sched_start(void) { ptimer_start(); }

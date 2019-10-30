@@ -7,6 +7,7 @@
 #include "include/pic.h"
 #include "include/sched.h"
 #include "include/shell.h"
+#include "include/syscall.h"
 #include "include/x86.h"
 
 struct __attribute__((packed)) platform_info {
@@ -32,14 +33,13 @@ void start_kernel(void *_t __attribute__((unused)), struct platform_info *pi,
   hpet_init();
   kbc_init();
 
-  sched_init();
+  syscall_init();
 
   enable_cpu_intr();
 
-  // sched_start();
-
-  shsh();
-  // do_taskA();
+  char buf[256];
+  unsigned long long softirq_ret = syscall(0, 0, (unsigned long long)buf, 256);
+  puth(softirq_ret, 16);
 
   while (1) {
     cpu_halt();

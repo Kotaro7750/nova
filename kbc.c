@@ -1,6 +1,8 @@
 #include "include/kbc.h"
+#include "include/common.h"
 #include "include/fbcon.h"
 #include "include/intr.h"
+#include "include/lock.h"
 #include "include/pic.h"
 #include "include/shell.h"
 #include "include/x86.h"
@@ -29,32 +31,68 @@ const char keymap[] = {
 
 void kbc_handler(void);
 
+struct queue keycode_queue;
+
 void do_kbc_interrupt(void) {
   if (!(io_read(KBC_STATUS_ADDR) & KBC_STATUS_BIT_OBF)) {
     goto kbc_exit;
   }
 
   unsigned char keycode = io_read(KBC_DATA_ADDR);
+  enqueue(&keycode_queue, keycode);
   if (keycode & KBC_DATA_BIT_IS_BRAKE) {
     goto kbc_exit;
   }
-  char c = keymap[keycode];
-  if (('a' <= c && c <= 'z')) {
-    c = c - 'a' + 'A';
-    input_to_buffer(c);
-  } else if (c == '\n') {
-    //  putc('\r');
-    input_to_buffer('\r');
+
+  if (keycode_queue.status == ERROR) {
+    puts("ERROR!!\n");
+    puth(keycode_queue.size, 16);
   }
-  // putc(c);
 
 kbc_exit:
   set_pic_eoi(KBC_INTR_NO);
 }
 
 void kbc_init(void) {
+  queue_init(&keycode_queue);
   void *handler;
   asm volatile("lea kbc_handler, %[handler]" : [ handler ] "=r"(handler));
   set_intr_desc(KBC_INTR_NO, handler);
   enable_pic_intr(KBC_INTR_NO);
+}
+
+char get_keydata(void) {
+  char data;
+  while (1) {
+    char ifflag;
+    intr_lock(&ifflag);
+    data = dequeue(&keycode_queue);
+    if (keycode_queue.status == ERROR) {
+      intr_unlock(&ifflag);
+      continue;
+    } else {
+      intr_unlock(&ifflag);
+      break;
+    }
+    intr_unlock(&ifflag);
+  }
+  return data;
+}
+
+char get_keycode(char keydata) { return keydata & ~KBC_DATA_BIT_IS_BRAKE; }
+
+char get_pressed_keycode(void) {
+  char keydata;
+  while ((keydata = get_keydata()) & KBC_DATA_BIT_IS_BRAKE) {
+    cpu_halt();
+  }
+  return get_keycode(keydata);
+}
+
+char getc(void) {
+  char c = keymap[get_pressed_keycode()];
+  if (('a' <= c && c <= 'z')) {
+    c = c - 'a' + 'A';
+  }
+  return c;
 }
