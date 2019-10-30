@@ -17,7 +17,9 @@ unsigned long long do_syscall_handler(unsigned long long syscall_id,
     return read(arg1, (void *)arg2, arg3);
     break;
   default:
-    return 0xbeefcafe01234567;
+    while (1) {
+      ;
+    }
     break;
   }
 
@@ -53,7 +55,6 @@ void syscall_init(void) {
 
 unsigned long long read(unsigned long long fd, void *buf,
                         unsigned long long buf_size) {
-  puts("READ\n");
   if (fd == 0) {
     return read_from_stdin((char *)buf, buf_size);
   }
@@ -61,7 +62,6 @@ unsigned long long read(unsigned long long fd, void *buf,
 }
 
 unsigned long long read_from_stdin(char *buf, unsigned long long buf_size) {
-  puts("READ FROM STDIN\n");
   unsigned long long i;
   for (i = 0; i < buf_size - 1;) {
     buf[i] = getc();

@@ -2,6 +2,7 @@
 #include "include/common.h"
 #include "include/fbcon.h"
 #include "include/intr.h"
+#include "include/lock.h"
 #include "include/pic.h"
 #include "include/x86.h"
 
@@ -37,11 +38,11 @@ void do_kbc_interrupt(void) {
   }
 
   unsigned char keycode = io_read(KBC_DATA_ADDR);
+  enqueue(&keycode_queue, keycode);
   if (keycode & KBC_DATA_BIT_IS_BRAKE) {
     goto kbc_exit;
   }
 
-  enqueue(&keycode_queue, keycode);
   if (keycode_queue.status == ERROR) {
     puts("ERROR!!\n");
     puth(keycode_queue.size, 16);
@@ -59,8 +60,34 @@ void kbc_init(void) {
   enable_pic_intr(KBC_INTR_NO);
 }
 
+char get_keydata(void) {
+  char data;
+  while (1) {
+    char ifflag;
+    intr_lock(&ifflag);
+    data = dequeue(&keycode_queue);
+    if (keycode_queue.status == ERROR) {
+      intr_unlock(&ifflag);
+      continue;
+    } else {
+      intr_unlock(&ifflag);
+      break;
+    }
+    intr_unlock(&ifflag);
+  }
+  return data;
+}
+
+char get_pressed_keycode(void) {
+  char keydata;
+  while ((keydata = get_keydata()) & KBC_DATA_BIT_IS_BRAKE) {
+    cpu_halt();
+  }
+  return keydata & ~KBC_DATA_BIT_IS_BRAKE;
+}
+
 char getc(void) {
-  char c = keymap[dequeue(&keycode_queue)];
+  char c = keymap[get_pressed_keycode()];
   if (('a' <= c && c <= 'z')) {
     c = c - 'a' + 'A';
   }
