@@ -4,6 +4,7 @@
 #include "include/intr.h"
 #include "include/lock.h"
 #include "include/pic.h"
+#include "include/shell.h"
 #include "include/x86.h"
 
 #define KBC_DATA_ADDR 0x0060

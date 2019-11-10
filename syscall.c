@@ -6,6 +6,15 @@
 
 #define SYSCALL_INTR_NO 0x80
 
+void syscall_handler(void);
+
+void syscall_init(void) {
+  void *handler;
+  asm volatile("lea syscall_handler, %[handler]" : [ handler ] "=r"(handler));
+  set_intr_desc(SYSCALL_INTR_NO, handler);
+  enable_pic_intr(SYSCALL_INTR_NO);
+}
+
 unsigned long long do_syscall_handler(unsigned long long syscall_id,
                                       unsigned long long arg1,
                                       unsigned long long arg2,
@@ -42,15 +51,6 @@ unsigned long long syscall(unsigned long long syscall_id,
                : [ syscall_id ] "D"(syscall_id), [ arg1 ] "S"(arg1),
                  [ arg2 ] "d"(arg2), [ arg3 ] "c"(arg3));
   return ret;
-}
-
-void syscall_handler(void);
-
-void syscall_init(void) {
-  void *handler;
-  asm volatile("lea syscall_handler, %[handler]" : [ handler ] "=r"(handler));
-  set_intr_desc(SYSCALL_INTR_NO, handler);
-  enable_pic_intr(SYSCALL_INTR_NO);
 }
 
 unsigned long long read(unsigned long long fd, void *buf,
