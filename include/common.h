@@ -8,6 +8,7 @@ int strncmp(char *str1, char *str2, unsigned size);
 
 enum QUEUE_STATUS { OK, ERROR };
 
+int strncmp(char *str1, char *str2, unsigned int size);
 struct queue {
   enum QUEUE_STATUS status;
   unsigned char buf[BUF_SIZE];
