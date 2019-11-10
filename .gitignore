@@ -1,5 +1,6 @@
 fs/NvVars
 fs/kernel.bin
+fs/fs.img
 fs/EFI/BOOT/BOOTX64.efi
 kernel.bin
 
