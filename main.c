@@ -12,13 +12,14 @@
 struct __attribute__((packed)) platform_info {
   struct framebuffer fb;
   void *rsdp;
+  void *fs_start;
 };
 
 void handler(void);
 void do_taskA(void);
 
 void start_kernel(void *_t __attribute__((unused)), struct platform_info *pi,
-                  void *_fs_start __attribute__((unused))) {
+                  void *_fs_start) {
   fb_init(&pi->fb);
   set_fg(255, 255, 255);
   set_bg(0, 70, 255);
