@@ -51,10 +51,14 @@ void dump_xsdt(void) {
 }
 
 struct SDTH *get_sdt(char *sig) {
+  char tmp[5];
   for (int i = 0; i < num_sdts; i++) {
-    if (!strncmp(sig, xsdt->Entry[i]->Signature, 4)) {
+    strncp(xsdt->Entry[i]->Signature, tmp, 4);
+    tmp[4] = '\0';
+    if (!strncmp(sig, tmp)) {
       return xsdt->Entry[i];
     }
   }
+  puts("NOT FOUND");
   return NULL;
 }

@@ -85,7 +85,7 @@ unsigned long long cmpr_clk_counts;
 unsigned char is_oneshot = 0;
 
 void hpet_init(void) {
-  struct HPET_TABLE *hpet_table = (struct HPET_TABLE *)get_sdt("HPET");
+  struct HPET_TABLE *hpet_table = (struct HPET_TABLE *)get_sdt("HPET\0");
 
   reg_base = hpet_table->base_address.address;
   union gcr gcr;

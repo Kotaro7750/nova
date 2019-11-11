@@ -4,11 +4,11 @@
 #define NULL 0x0
 #define BUF_SIZE 256
 
-int strncmp(char *str1, char *str2, unsigned size);
+int strncmp(char *str1, char *str2);
+void strncp(char *src, char *dst, int size);
 
 enum QUEUE_STATUS { OK, ERROR };
 
-int strncmp(char *str1, char *str2, unsigned int size);
 struct queue {
   enum QUEUE_STATUS status;
   unsigned char buf[BUF_SIZE];

@@ -39,9 +39,9 @@ void start_kernel(void *_t __attribute__((unused)), struct platform_info *pi,
 
   enable_cpu_intr();
 
-  // shsh();
-  char *hello_str = (char *)pi->fs_start;
-  puts(hello_str);
+  shsh();
+  // char *hello_str = (char *)pi->fs_start;
+  // puts(hello_str);
 
   while (1) {
     cpu_halt();
