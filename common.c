@@ -7,6 +7,7 @@ void strncp(char *src, char *dst, int size) {
     dst[i] = src[i];
   }
 }
+
 int strncmp(char *str1, char *str2) {
   int i = 0;
   while (str1[i] == str2[i]) {

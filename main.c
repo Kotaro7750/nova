@@ -1,6 +1,7 @@
 #include "include/acpi.h"
 #include "include/fb.h"
 #include "include/fbcon.h"
+#include "include/fs.h"
 #include "include/hpet.h"
 #include "include/intr.h"
 #include "include/kbc.h"
@@ -34,14 +35,33 @@ void start_kernel(void *_t __attribute__((unused)), struct platform_info *pi,
   hpet_init();
   kbc_init();
   sched_init();
+  fs_init(pi->fs_start);
 
   syscall_init();
 
   enable_cpu_intr();
 
-  shsh();
-  // char *hello_str = (char *)pi->fs_start;
-  // puts(hello_str);
+  // shsh();
+
+  struct file *hello = open("HELLO.TXT");
+  if (hello) {
+    puts((char *)hello->name);
+    putc(' ');
+    puts((char *)hello->data);
+  } else {
+    puts("HELLO.TXT IS NOT FOUND.");
+  }
+  puts("\r\n");
+
+  struct file *foo = open("FOO.TXT");
+  if (foo) {
+    puts((char *)foo->name);
+    putc(' ');
+    puts((char *)foo->data);
+  } else {
+    puts("FOO.TXT IS NOT FOUND.");
+  }
+  puts("\r\n");
 
   while (1) {
     cpu_halt();
