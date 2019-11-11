@@ -39,7 +39,6 @@
   SEG_DESCTYPE(1) | SEG_PRES(1) | SEG_SAVL(0) | SEG_LONG(0) | SEG_SIZE(1) |    \
       SEG_GRAN(1) | SEG_PRIV(0) | SEG_DATA_RDWRA
 
-
 #define SS_KERNEL_CODE 0x0008
 #define SS_KERNEL_DATA 0x0010
 
@@ -65,5 +64,5 @@ struct __attribute__((packed)) interrupt_descriptor {
 
 void enable_cpu_intr(void);
 void io_write(unsigned short addr, unsigned char value);
-void cpu_halt(void); 
+void cpu_halt(void);
 #endif
