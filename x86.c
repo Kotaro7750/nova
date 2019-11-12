@@ -16,11 +16,12 @@ void io_write(unsigned short addr, unsigned char value) {
                [ addr ] "d"(addr));
 }
 
+// create_descriptor is a function to compose GDT entry
 unsigned long long create_descriptor(unsigned long base, unsigned long limit,
                                      unsigned short flag) {
   unsigned long long descriptor = 0;
 
-  // Create the high 32 bit segment
+  // higher(32~64 bit) of descriptor
   descriptor = limit & 0x000F0000; // set limit bits 19:16
   descriptor |=
       (flag << 8) & 0x00F0FF00; // set type, p, dpl, s, g, d/b, l and avl fields
@@ -30,7 +31,7 @@ unsigned long long create_descriptor(unsigned long base, unsigned long limit,
   // Shift by 32 to allow for low part of segment
   descriptor <<= 32;
 
-  // Create the low 32 bit segment
+  // lower(0~31 bit) of descriptor
   descriptor |= base << 16;         // set base bits 15:0
   descriptor |= limit & 0x0000FFFF; // set limit bits 15:0
 
@@ -46,12 +47,12 @@ void gdt_init(void) {
   gdtr[1] = ((unsigned long long)gdt >> 48);
   asm volatile("lgdt gdtr");
 
-  // data segment and stack segment
+  // set data segment and stack segment
   asm volatile("movw $2*8, %ax\n"
                "movw %ax, %ds\n"
                "movw %ax, %ss\n");
 
-  // code segment
+  // set code segment
   unsigned short selector = SS_KERNEL_CODE;
   unsigned long long dummy;
   asm volatile("pushq %[selector];"
